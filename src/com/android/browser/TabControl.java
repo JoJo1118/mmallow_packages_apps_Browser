@@ -728,6 +728,12 @@ class TabControl {
         return true;
     }
 
+    // Used by Tab.onJsAlert() and friends
+    void setActiveTab(Tab tab) {
+        // Calls TabControl.setCurrentTab()
+        mController.setActiveTab(tab);
+    }
+
     public void setOnThumbnailUpdatedListener(OnThumbnailUpdatedListener listener) {
         mOnThumbnailUpdatedListener = listener;
         for (Tab t : mTabs) {
