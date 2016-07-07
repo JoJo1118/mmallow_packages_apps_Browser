@@ -71,4 +71,6 @@ public interface ActivityController {
 
     boolean dispatchGenericMotionEvent(MotionEvent ev);
 
+    void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
+
 }

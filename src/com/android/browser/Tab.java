@@ -1143,7 +1143,8 @@ class Tab implements PictureListener {
             public void onDownloadStart(String url, String userAgent,
                     String contentDisposition, String mimetype, String referer,
                     long contentLength) {
-                mWebViewController.onDownloadStart(Tab.this, url, userAgent, contentDisposition,
+
+                mWebViewController.onRequestPermissionsDownloadStart(Tab.this, url, userAgent, contentDisposition,
                         mimetype, referer, contentLength);
             }
         };

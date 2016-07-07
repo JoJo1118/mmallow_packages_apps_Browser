@@ -304,4 +304,9 @@ public class BrowserActivity extends Activity {
                 super.dispatchGenericMotionEvent(ev);
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        mController.onRequestPermissionsResult(requestCode, permissions,  grantResults) ;
+    }
+
 }

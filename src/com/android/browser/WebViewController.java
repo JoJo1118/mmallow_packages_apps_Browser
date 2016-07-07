@@ -73,8 +73,14 @@ public interface WebViewController {
     void onReceivedHttpAuthRequest(Tab tab, WebView view, final HttpAuthHandler handler,
             final String host, final String realm);
 
+    void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
+
     void onDownloadStart(Tab tab, String url, String useragent, String contentDisposition,
             String mimeType, String referer, long contentLength);
+
+    void onRequestPermissionsDownloadStart(Tab tab, String url, String userAgent,
+            String contentDisposition, String mimetype, String referer,
+            long contentLength);
 
     void showCustomView(Tab tab, View view, int requestedOrientation,
             WebChromeClient.CustomViewCallback callback);

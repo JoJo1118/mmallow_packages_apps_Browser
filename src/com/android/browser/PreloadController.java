@@ -151,11 +151,25 @@ public class PreloadController implements WebViewController {
         if (LOGD_ENABLED) Log.d(LOGTAG, "onReceivedHttpAuthRequest()");
     }
 
+
+    public void onRequestPermissionsResult(int requestCode,
+                                    String[] permissions,
+                                    int[] grantResults){
+        if (LOGD_ENABLED) Log.d(LOGTAG, "onRequestPermissionsResult()");
+    }
+
     @Override
     public void onDownloadStart(Tab tab, String url, String useragent,
                                     String contentDisposition, String mimeType,
                                     String referer, long contentLength) {
         if (LOGD_ENABLED) Log.d(LOGTAG, "onDownloadStart()");
+    }
+
+    @Override
+    public void onRequestPermissionsDownloadStart(Tab tab, String url, String userAgent,
+            String contentDisposition, String mimetype, String referer,
+            long contentLength){
+            if (LOGD_ENABLED) Log.d(LOGTAG, "onRequestPermissionsDownloadStart()");
     }
 
     @Override

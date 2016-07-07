@@ -149,4 +149,9 @@ public class NullController implements ActivityController {
         return false;
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
+        return;
+    }
+
 }

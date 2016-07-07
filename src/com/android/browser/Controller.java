@@ -17,6 +17,7 @@
 package com.android.browser;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DownloadManager;
 import android.app.ProgressDialog;
@@ -38,6 +39,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.Manifest;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.AsyncTask;
@@ -54,6 +56,8 @@ import android.provider.BrowserContract.Images;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Intents.Insert;
 import android.speech.RecognizerIntent;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.app.ActivityCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Patterns;
@@ -82,6 +86,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Toast;
 
+import com.android.browser.DownloadStartInf;
 import com.android.browser.IntentHandler.UrlData;
 import com.android.browser.UI.ComboViews;
 import com.android.browser.provider.BrowserProvider2.Thumbnails;
@@ -113,7 +118,7 @@ public class Controller
         "android.speech.extras.SEND_APPLICATION_ID_EXTRA";
     private static final String INCOGNITO_URI = "browser:incognito";
 
-
+    private final int REQUEST_WRITE_EXTERNAL_STORAGE = 1233;
     // public message ids
     public final static int LOAD_URL = 1001;
     public final static int STOP_LOAD = 1002;
@@ -161,6 +166,8 @@ public class Controller
 
     // A bitmap that is re-used in createScreenshot as scratch space
     private static Bitmap sThumbnailBitmap;
+
+    private DownloadStartInf mDownloadStartInf = null;
 
     private Activity mActivity;
     private UI mUi;
@@ -1039,6 +1046,35 @@ public class Controller
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+
+        Log.d(LOGTAG, "onRequestPermissionsResult");
+        switch (requestCode) {
+            case REQUEST_WRITE_EXTERNAL_STORAGE:
+            {
+                if (mDownloadStartInf == null) {
+                    Log.e(LOGTAG, "onRequestPermissionsResult should not equal to null");
+                    return;
+                }
+
+                onDownloadStart(mDownloadStartInf.tab,
+                    mDownloadStartInf.url,
+                    mDownloadStartInf.userAgent,
+                    mDownloadStartInf.contentDisposition,
+                    mDownloadStartInf.mimetype,
+                    mDownloadStartInf.referer,
+                    mDownloadStartInf.contentLength);
+
+                mDownloadStartInf = null;
+
+            }
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
     public void onDownloadStart(Tab tab, String url, String userAgent,
             String contentDisposition, String mimetype, String referer,
             long contentLength) {
@@ -1056,6 +1092,68 @@ public class Controller
                 closeTab(tab);
             }
         }
+    }
+
+    @Override
+    public void onRequestPermissionsDownloadStart(Tab tab, String url, String userAgent,
+            String contentDisposition, String mimetype, String referer,
+            long contentLength) {
+
+            Log.d(LOGTAG, "onRequestPermissionsDownloadStart");
+            if (ContextCompat.checkSelfPermission(mActivity,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                mDownloadStartInf = new DownloadStartInf(tab, url, userAgent,
+                                                contentDisposition, mimetype, referer,
+                                                contentLength);
+
+                // Should we show an explanation?
+                if (ActivityCompat.shouldShowRequestPermissionRationale(
+                        mActivity,Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+                // Show an expanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                    DialogInterface.OnClickListener okListener =
+                            new DialogInterface.OnClickListener() {
+                    @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            ActivityCompat.requestPermissions(mActivity,
+                                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                    REQUEST_WRITE_EXTERNAL_STORAGE);
+                        }
+                    };
+
+                    new AlertDialog.Builder(mActivity)
+                        .setMessage("You need to allow access to WRITE_EXTERNAL_STORAGE")
+                        .setPositiveButton("OK", okListener)
+                        .setNegativeButton("Cancel", null)
+                        .create()
+                        .show();
+
+                    return;
+
+                } else {
+
+                    // No explanation needed, we can request the permission.
+                    // REQUEST_WRITE_EXTERNAL_STORAGE is an
+                    // app-defined int constant. The callback method gets the
+                    // result of the request.
+
+                    ActivityCompat.requestPermissions(mActivity,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        REQUEST_WRITE_EXTERNAL_STORAGE);
+
+                    return;
+                }
+            }
+
+        onDownloadStart(tab,url, userAgent,
+            contentDisposition, mimetype, referer,
+            contentLength);
+        mDownloadStartInf = null;
+
     }
 
     @Override
